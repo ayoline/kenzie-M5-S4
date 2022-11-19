@@ -4,7 +4,9 @@ from rest_framework.views import Request, View
 
 class IsAdminOnGetRoute(permissions.BasePermission):
     def has_permission(self, request: Request, view: View) -> bool:
-        return request.method != "GET" or request.user.is_superuser
+        return (
+            request.method != "GET" and request.method != "POST"
+        ) or request.user.is_superuser
 
 
 class IsAdminOrCritic(permissions.BasePermission):

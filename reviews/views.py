@@ -2,12 +2,13 @@ from rest_framework import generics
 from .models import Review
 from .serializers import ReviewSerializer
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.views import Response, status
 from rest_framework.exceptions import PermissionDenied
+from .permissions import IsAdminOrCritic
 
 
 class ReviewView(generics.ListCreateAPIView):
     authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminOrCritic]
 
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
@@ -29,25 +30,19 @@ class ReviewView(generics.ListCreateAPIView):
 
 class ReviewDetailView(generics.RetrieveDestroyAPIView):
     authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminOrCritic]
 
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    lookup_url_kwarg = "movie_id"
+    lookup_url_kwarg = "review_id"
 
     def get_queryset(self):
         movie_id = self.kwargs["movie_id"]
         review_id = self.kwargs["review_id"]
-        review = self.queryset.filter(movie=movie_id, id=review_id)
+        review = self.queryset.filter(movie=movie_id, id=review_id).all()
 
         if len(review):
-            # serializer = ReviewSerializer(review, many=True)
-            print("++++++++++++++++++++++++++++= entrou")
-            import ipdb
-            ipdb.set_trace()
-            print()
-            return self.queryset.filter(movie=movie_id, id=review_id)
-
-            # return Response(serializer.data, status.HTTP_200_OK)
+            return review
 
     def perform_destroy(self, instance):
         instance.delete()
